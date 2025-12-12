@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_fss
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: antiplagiat_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  postgres_reports:
+    image: postgres:15-alpine
+    container_name: postgres_fas
+    environment:
+      POSTGRES_USER: analysis_user
+      POSTGRES_PASSWORD: analysis_password
+      POSTGRES_DB: reports_db
+    volumes:
+      - reports_data:/var/lib/postgresql/data
+    restart: always
+
+  file-storing-service:
+    build:
+      context: .
+      dockerfile: file-storing-service/Dockerfile
+    container_name: file-storing-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/antiplagiat_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      ANALYSIS_SERVICE_URL: http://file-analysis-service:8082
+    depends_on:
+      - postgres
+    restart: always
+
+  file-analysis-service:
+    build:
+      context: .
+      dockerfile: file-analysis-service/Dockerfile
+    container_name: file-analysis-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_reports:5432/reports_db
+      SPRING_DATASOURCE_USERNAME: analysis_user
+      SPRING_DATASOURCE_PASSWORD: analysis_password
+    depends_on:
+      - postgres_reports
+    restart: always
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - file-storing-service
+      - file-analysis-service
+    restart: always
+
+volumes:
+  postgres_data:
+  reports_data:

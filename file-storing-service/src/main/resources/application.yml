@@ -1,0 +1,21 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: file-storing-service
+  datasource:
+    url: jdbc:postgresql://postgres:5432/antiplagiat_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+analysis-service:
+  url: ${ANALYSIS_SERVICE_URL}
+
+storage:
+  upload-dir: ./local-storage/

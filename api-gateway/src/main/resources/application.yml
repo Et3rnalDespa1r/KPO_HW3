@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: submit_work
+          uri: http://file-storing-service:8081
+          predicates:
+            - Path=/api/v1/submit
+          filters:
+            - RewritePath=/api/v1/submit, /internal/store
+
+        - id: get_reports
+          uri: http://file-analysis-service:8082
+          predicates:
+            - Path=/api/v1/works/{workId}/reports
+          filters:
+            - StripPrefix=2

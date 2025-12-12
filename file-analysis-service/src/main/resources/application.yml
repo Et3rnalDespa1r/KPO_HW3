@@ -1,0 +1,15 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: file-analysis-service
+  datasource:
+    url: jdbc:postgresql://postgres_reports:5432/reports_db
+    username: analysis_user
+    password: analysis_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
