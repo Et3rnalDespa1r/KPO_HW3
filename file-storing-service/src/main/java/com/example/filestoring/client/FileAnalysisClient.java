@@ -15,12 +15,12 @@ public class FileAnalysisClient {
         this.analysisServiceUrl = analysisServiceUrl;
     }
 
-    public void requestAnalysis(Long workId, String filePath) {
+    public void analyzeWork(Long workId, String filePath, String fileHash) {
         String url = analysisServiceUrl + "/internal/analyze";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String requestBody = String.format("{\"workId\": %d, \"filePath\": \"%s\"}", workId, filePath);
+        String requestBody = String.format("{\"workId\": %d, \"filePath\": \"%s\", \"fileHash\": \"%s\"}", workId, filePath, fileHash);
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         try {

@@ -2,6 +2,7 @@ package com.example.filestoring.controller;
 import com.example.filestoring.model.WorkMetadata;
 import com.example.filestoring.model.WorkStatus;
 import com.example.filestoring.service.FileStoringService;
+import com.example.filestoring.service.WorkSubmission; // НОВЫЙ ИМПОРТ
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,10 @@ public class FileStoringController {
             @RequestParam("assignmentName") String assignmentName,
             @RequestParam("file") MultipartFile file) {
         try {
-            WorkMetadata metadata = fileStoringService.submitWork(submitterName, assignmentName, file);
+            // Создаем объект WorkSubmission
+            WorkSubmission submission = new WorkSubmission(submitterName, assignmentName, file);
+
+            WorkMetadata metadata = fileStoringService.submitWork(submission, file);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(metadata.getId());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();

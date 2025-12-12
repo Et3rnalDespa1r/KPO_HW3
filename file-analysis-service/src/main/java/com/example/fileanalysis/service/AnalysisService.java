@@ -1,34 +1,58 @@
-package com.example.fileanalysis.service;// HW3/file-analysis-service/src/main/java/com.example.filestoring.service.AnalysisService.java
+package com.example.fileanalysis.service;
+
 import com.example.fileanalysis.model.Report;
+import com.example.fileanalysis.model.WorkData;
 import com.example.fileanalysis.repository.ReportRepository;
-import lombok.RequiredArgsConstructor;
+import com.example.fileanalysis.repository.WorkDataRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
-@RequiredArgsConstructor
 public class AnalysisService {
-
     private final ReportRepository reportRepository;
+    private final WorkDataRepository workDataRepository;
+
+    public AnalysisService(ReportRepository reportRepository, WorkDataRepository workDataRepository) {
+        this.reportRepository = reportRepository;
+        this.workDataRepository = workDataRepository;
+    }
 
     @Transactional
-    public void analyze(AnalysisRequest request) throws IOException {
-        String fileContent = "Sample content for assignment " + request.workId();
-        Random rand = new Random();
-        double score = 65 + rand.nextDouble() * 35;
-        boolean isPlagiarism = score < 85.0;
-        String wordCloudUrl = createWordCloudUrl(fileContent);
+    public Report analyzeWork(AnalysisRequest request) {
+
+        boolean isPlagiarized = workDataRepository.findByFileHash(request.fileHash()).isPresent();
+
+        double antiplagiatScore;
+        if (isPlagiarized) {
+            antiplagiatScore = 15.0 + new Random().nextDouble() * 10;
+        } else {
+            antiplagiatScore = 85.0 + new Random().nextDouble() * 10;
+        }
+
+        WorkData newWorkData = new WorkData();
+        newWorkData.setId(request.workId());
+        newWorkData.setFileHash(request.fileHash());
+        workDataRepository.save(newWorkData);
+
         Report report = new Report();
         report.setWorkId(request.workId());
-        report.setAntiplagiatScore(score);
-        report.setPlagiarism(isPlagiarism);
-        report.setWordCloudUrl(wordCloudUrl);
-        reportRepository.save(report);
+        report.setAntiplagiatScore(antiplagiatScore);
+        report.setPlagiarism(antiplagiatScore < 85.0);
+        report.setAnalysisDate(LocalDateTime.now());
+
+        String wordCloudText = request.filePath()
+                .substring(request.filePath().lastIndexOf('/') + 1)
+                .replace('_', ' ')
+                .replaceFirst("\\..*", "");
+
+        report.setWordCloudUrl(createWordCloudUrl(wordCloudText));
+
+        return reportRepository.save(report);
     }
 
     private String createWordCloudUrl(String text) {

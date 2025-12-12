@@ -1,3 +1,9 @@
 package com.example.fileanalysis.service;
 
-public record AnalysisRequest(Long workId, String filePath) {}
+import java.io.Serializable;
+
+public record AnalysisRequest(
+        Long workId,
+        String filePath,
+        String fileHash
+) implements Serializable {}

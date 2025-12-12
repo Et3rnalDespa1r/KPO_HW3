@@ -14,6 +14,7 @@ public class WorkMetadata {
     private String assignmentName;
     private LocalDateTime submissionDate = LocalDateTime.now();
     private String filePath;
+    private String fileHash;
     @Enumerated(EnumType.STRING)
     private WorkStatus status = WorkStatus.PENDING;
 }
